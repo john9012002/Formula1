@@ -1,263 +1,267 @@
 """
-Analyze F1 search trends with Google Trends
-FIXED VERSION - With Rate Limiting Protection & Retry Logic
+F1 Google Trends - DEMO DATA
+Dùng data mẫu khi bị rate limited
 """
 
-from pytrends.request import TrendReq
-from pytrends.exceptions import TooManyRequestsError, ResponseError
 import pandas as pd
 import matplotlib.pyplot as plt
-import time
-import random
+import numpy as np
+from datetime import datetime, timedelta
 
-def setup_pytrends():
-    """Setup PyTrends with backoff"""
-    # Add random delay to avoid rate limiting
-    time.sleep(random.uniform(1, 3))
-    pytrends = TrendReq(
-        hl='en-US', 
-        tz=360,
-        timeout=(10, 25),  # Connection and read timeout
-        retries=2,
-        backoff_factor=0.5
+def generate_demo_trends_data():
+    """
+    Tạo demo data dựa trên patterns thực tế của F1
+    """
+    
+    print("="*60)
+    print("🏎️  F1 GOOGLE TRENDS - DEMO MODE")
+    print("   (Using realistic sample data)")
+    print("="*60)
+    
+    # Generate dates (last 5 years, weekly)
+    end_date = datetime.now()
+    start_date = end_date - timedelta(days=5*365)
+    
+    date_range = pd.date_range(start=start_date, end=end_date, freq='W')
+    
+    # Create realistic F1 search patterns
+    n = len(date_range)
+    
+    # Base trend (growing over time)
+    base_trend = np.linspace(40, 70, n)
+    
+    # Seasonal pattern (race season March-November)
+    months = np.array([d.month for d in date_range])
+    seasonal = np.where((months >= 3) & (months <= 11), 15, -10)
+    
+    # Random noise
+    noise = np.random.normal(0, 5, n)
+    
+    # Formula 1 interest
+    formula1_interest = base_trend + seasonal + noise
+    formula1_interest = np.clip(formula1_interest, 0, 100)
+    
+    # F1 interest (slightly different pattern)
+    f1_interest = formula1_interest * 0.85 + np.random.normal(0, 3, n)
+    f1_interest = np.clip(f1_interest, 0, 100)
+    
+    # Drive to Survive boost (started 2019, big impact)
+    dts_boost = np.zeros(n)
+    for i, date in enumerate(date_range):
+        if date.year >= 2019:
+            # March releases
+            if date.month == 3:
+                dts_boost[i] = 20
+            elif date.month in [2, 4]:
+                dts_boost[i] = 10
+    
+    dts_interest = formula1_interest * 0.7 + dts_boost + np.random.normal(0, 5, n)
+    dts_interest = np.clip(dts_interest, 0, 100)
+    
+    # Create DataFrame
+    df = pd.DataFrame({
+        'Formula 1': formula1_interest.astype(int),
+        'F1': f1_interest.astype(int),
+        'Drive to Survive': dts_interest.astype(int)
+    }, index=date_range)
+    
+    return df
+
+def analyze_demo_data(df):
+    """Analyze demo trends data"""
+    
+    print("\n📊 F1 Search Interest (0-100 scale):")
+    print(df.tail(10))
+    
+    print("\n📈 Statistics:")
+    for keyword in df.columns:
+        avg = df[keyword].mean()
+        max_val = df[keyword].max()
+        min_val = df[keyword].min()
+        latest = df[keyword].iloc[-1]
+        max_date = df[keyword].idxmax()
+        
+        print(f"\n{keyword}:")
+        print(f"  Average: {avg:.1f}")
+        print(f"  Max: {max_val} (on {max_date.date()})")
+        print(f"  Min: {min_val}")
+        print(f"  Latest: {latest}")
+    
+    # Save
+    df.to_csv('f1_google_trends_demo.csv')
+    print("\n✅ Saved: f1_google_trends_demo.csv")
+    
+    # Plot
+    plt.figure(figsize=(14, 7))
+    
+    for keyword in df.columns:
+        plt.plot(df.index, df[keyword], 
+                label=keyword, linewidth=2.5, marker='o', markersize=2, alpha=0.8)
+    
+    # Highlight key events
+    plt.axvline(pd.Timestamp('2019-03-01'), color='red', linestyle='--', 
+               alpha=0.5, label='DTS S1 Release')
+    plt.axvline(pd.Timestamp('2021-12-01'), color='orange', linestyle='--', 
+               alpha=0.5, label='2021 Title Fight')
+    
+    plt.xlabel('Date', fontsize=12, fontweight='bold')
+    plt.ylabel('Search Interest (0-100)', fontsize=12, fontweight='bold')
+    plt.title('F1 Search Interest Over Time - Demo Data (Realistic Pattern)', 
+             fontsize=14, fontweight='bold')
+    plt.legend(fontsize=10, loc='upper left')
+    plt.grid(True, alpha=0.3, linestyle='--')
+    plt.tight_layout()
+    
+    plt.savefig('f1_google_trends_demo.png', dpi=300, bbox_inches='tight')
+    print("✅ Saved: f1_google_trends_demo.png")
+    plt.show()
+    
+    return df
+
+def generate_regional_demo_data():
+    """Generate demo regional interest data"""
+    
+    print("\n🌍 REGIONAL INTEREST - DEMO DATA:")
+    print("-"*60)
+    
+    # Top countries for F1 (realistic)
+    countries = {
+        'Netherlands': 100,  # Max Verstappen effect
+        'Monaco': 95,
+        'Belgium': 88,
+        'United Kingdom': 85,
+        'Singapore': 82,
+        'Italy': 80,
+        'Australia': 78,
+        'United States': 75,  # Growing
+        'Mexico': 72,
+        'Brazil': 70,
+        'Spain': 68,
+        'Germany': 65,
+        'France': 63,
+        'Canada': 60,
+        'Japan': 58,
+        'Saudi Arabia': 55,
+        'United Arab Emirates': 52,
+        'Austria': 50,
+        'Hungary': 48,
+        'Poland': 45
+    }
+    
+    df_regional = pd.DataFrame({
+        'Country': countries.keys(),
+        'Formula 1': countries.values()
+    }).set_index('Country')
+    
+    print("\n🏆 Top 20 Countries - Search Interest:")
+    for idx, (country, interest) in enumerate(countries.items(), 1):
+        print(f"   {idx:2d}. {country:25s}: {interest}")
+    
+    # Save
+    df_regional.to_csv('f1_regional_interest_demo.csv')
+    print("\n✅ Saved: f1_regional_interest_demo.csv")
+    
+    # Plot
+    plt.figure(figsize=(10, 8))
+    df_regional.head(10).sort_values('Formula 1')['Formula 1'].plot(
+        kind='barh', color='steelblue'
     )
-    return pytrends
+    plt.xlabel('Search Interest', fontsize=11, fontweight='bold')
+    plt.title('Top 10 Countries - F1 Interest (Demo)', fontsize=12, fontweight='bold')
+    plt.grid(True, alpha=0.3, axis='x')
+    plt.tight_layout()
+    plt.savefig('f1_regional_interest_demo.png', dpi=300, bbox_inches='tight')
+    print("✅ Saved: f1_regional_interest_demo.png")
+    
+    return df_regional
 
-def safe_request(func, max_retries=3, base_delay=5):
-    """Wrapper for safe API requests with exponential backoff"""
+def generate_related_queries_demo():
+    """Generate demo related queries"""
     
-    for attempt in range(max_retries):
-        try:
-            # Random delay before request
-            time.sleep(random.uniform(2, 5))
-            return func()
-            
-        except TooManyRequestsError:
-            if attempt < max_retries - 1:
-                delay = base_delay * (2 ** attempt) + random.uniform(0, 5)
-                print(f"⚠️ Rate limited. Waiting {delay:.1f}s before retry {attempt + 1}/{max_retries}...")
-                time.sleep(delay)
-            else:
-                print("❌ Max retries reached. Google Trends is blocking requests.")
-                print("💡 Solutions:")
-                print("   1. Wait 1-2 hours before trying again")
-                print("   2. Use VPN to change IP")
-                print("   3. Reduce number of queries")
-                return None
-                
-        except ResponseError as e:
-            print(f"❌ Response error: {e}")
-            if attempt < max_retries - 1:
-                delay = base_delay * (2 ** attempt)
-                print(f"Retrying in {delay}s...")
-                time.sleep(delay)
-            else:
-                return None
-                
-        except Exception as e:
-            print(f"❌ Unexpected error: {e}")
-            return None
+    print("\n🔍 RELATED QUERIES - DEMO DATA:")
+    print("-"*60)
     
-    return None
-
-def analyze_f1_interest(pytrends, keywords=['Formula 1', 'F1', 'Drive to Survive']):
-    """Analyze F1 search interest"""
+    top_queries = {
+        'f1 schedule': 100,
+        'f1 results': 95,
+        'formula 1 standings': 90,
+        'f1 live': 85,
+        'max verstappen': 82,
+        'lewis hamilton': 78,
+        'ferrari f1': 75,
+        'red bull racing': 72,
+        'monaco grand prix': 70,
+        'f1 news': 68
+    }
     
-    print("📈 Analyzing F1 Search Interest...")
+    rising_queries = {
+        'las vegas gp': 'Breakout',
+        'lando norris': '+500%',
+        'oscar piastri': '+450%',
+        'f1 academy': '+320%',
+        'george russell': '+280%',
+        'vegas f1': '+250%',
+        'charles leclerc': '+200%',
+        'f1 2024': '+180%',
+        'miami gp': '+150%',
+        'fernando alonso': '+120%'
+    }
     
-    def _get_interest():
-        # Build payload
-        pytrends.build_payload(
-            keywords,
-            cat=0,
-            timeframe='today 5-y',  # Last 5 years
-            geo='',  # Worldwide
-            gprop=''
-        )
-        
-        # Get interest over time
-        return pytrends.interest_over_time()
+    print("\n📊 Top Related Queries:")
+    for query, value in top_queries.items():
+        print(f"   {query:25s}: {value}")
     
-    # Use safe request wrapper
-    interest_over_time = safe_request(_get_interest)
+    print("\n📈 Rising Queries:")
+    for query, growth in rising_queries.items():
+        print(f"   {query:25s}: {growth}")
     
-    if interest_over_time is not None and not interest_over_time.empty:
-        # Remove isPartial column
-        if 'isPartial' in interest_over_time.columns:
-            interest_over_time = interest_over_time.drop('isPartial', axis=1)
-        
-        print("\n📊 F1 Search Interest (0-100 scale):")
-        print(interest_over_time.tail(10))
-        
-        # Plot
-        plt.figure(figsize=(14, 6))
-        for keyword in keywords:
-            if keyword in interest_over_time.columns:
-                plt.plot(interest_over_time.index, interest_over_time[keyword], 
-                        label=keyword, linewidth=2, marker='o', markersize=3, alpha=0.7)
-        
-        plt.xlabel('Date', fontsize=11, fontweight='bold')
-        plt.ylabel('Search Interest', fontsize=11, fontweight='bold')
-        plt.title('F1 Search Interest Over Time (Google Trends)', 
-                 fontsize=13, fontweight='bold')
-        plt.legend(fontsize=10)
-        plt.grid(True, alpha=0.3)
-        plt.tight_layout()
-        plt.savefig('f1_google_trends.png', dpi=300)
-        print("\n✅ Saved: f1_google_trends.png")
-        
-        return interest_over_time
+    # Save
+    pd.DataFrame({
+        'query': top_queries.keys(),
+        'value': top_queries.values()
+    }).to_csv('f1_top_queries_demo.csv', index=False)
     
-    print("❌ Could not get interest over time data")
-    return None
-
-def analyze_regional_interest(pytrends, keyword='Formula 1'):
-    """Analyze interest by region with rate limiting protection"""
+    pd.DataFrame({
+        'query': rising_queries.keys(),
+        'value': rising_queries.values()
+    }).to_csv('f1_rising_queries_demo.csv', index=False)
     
-    print(f"\n🌍 Analyzing Regional Interest for '{keyword}'...")
-    
-    def _get_regional():
-        pytrends.build_payload([keyword], timeframe='today 12-m')
-        
-        # Interest by region
-        return pytrends.interest_by_region(
-            resolution='COUNTRY',
-            inc_low_vol=False,
-            inc_geo_code=False
-        )
-    
-    # Use safe request wrapper
-    regional_interest = safe_request(_get_regional)
-    
-    if regional_interest is not None and not regional_interest.empty:
-        # Top 20 countries
-        top_countries = regional_interest.nlargest(20, keyword)
-        
-        print(f"\n🏆 Top 20 Countries - '{keyword}' Search Interest:")
-        for idx, (country, row) in enumerate(top_countries.iterrows(), 1):
-            print(f"   {idx:2d}. {country:20s}: {row[keyword]}")
-        
-        # Save to CSV
-        top_countries.to_csv('f1_regional_interest.csv')
-        print("\n✅ Saved: f1_regional_interest.csv")
-        
-        return regional_interest
-    
-    print("❌ Could not get regional interest data")
-    return None
-
-def analyze_related_queries(pytrends, keyword='Formula 1'):
-    """Get related queries with rate limiting protection"""
-    
-    print(f"\n🔍 Analyzing Related Queries for '{keyword}'...")
-    
-    def _get_related():
-        pytrends.build_payload([keyword], timeframe='today 12-m')
-        return pytrends.related_queries()
-    
-    # Use safe request wrapper
-    related_queries = safe_request(_get_related)
-    
-    if related_queries is not None and keyword in related_queries:
-        top_queries = related_queries[keyword]['top']
-        rising_queries = related_queries[keyword]['rising']
-        
-        print(f"\n📊 Top Related Queries for '{keyword}':")
-        if top_queries is not None and not top_queries.empty:
-            print(top_queries.head(10))
-            top_queries.to_csv('f1_top_queries.csv', index=False)
-        else:
-            print("   No top queries available")
-        
-        print(f"\n📈 Rising Queries:")
-        if rising_queries is not None and not rising_queries.empty:
-            print(rising_queries.head(10))
-            rising_queries.to_csv('f1_rising_queries.csv', index=False)
-        else:
-            print("   No rising queries available")
-        
-        return related_queries
-    
-    print("❌ Could not get related queries data")
-    return None
+    print("\n✅ Saved: f1_top_queries_demo.csv")
+    print("✅ Saved: f1_rising_queries_demo.csv")
 
 def main():
-    """Main function with proper error handling"""
+    """Main demo function"""
     
-    print("="*60)
-    print("🏎️  F1 GOOGLE TRENDS ANALYSIS")
-    print("="*60)
+    print("\n⚠️  NOTE: This is DEMO data with realistic patterns")
+    print("    For real data, wait 1-2 hours or use VPN")
+    print()
     
-    # Setup
-    print("\n⚙️  Setting up PyTrends...")
-    pytrends = setup_pytrends()
-    print("✅ Ready!\n")
+    # Generate and analyze trends data
+    df = generate_demo_trends_data()
+    analyze_demo_data(df)
     
-    # Analysis 1: Interest over time
-    print("-"*60)
-    interest_df = analyze_f1_interest(pytrends, ['Formula 1', 'F1', 'Drive to Survive'])
+    # Regional data
+    df_regional = generate_regional_demo_data()
     
-    # Wait between requests
-    if interest_df is not None:
-        print("\n⏳ Waiting before next request...")
-        time.sleep(random.uniform(10, 15))
+    # Related queries
+    generate_related_queries_demo()
     
-    # Analysis 2: Regional interest (OPTIONAL - comment out if rate limited)
-    print("-"*60)
-    
-    choice = input("\nContinue with regional analysis? (y/n - may trigger rate limit): ").lower()
-    
-    if choice == 'y':
-        regional_df = analyze_regional_interest(pytrends, 'Formula 1')
-        
-        if regional_df is not None:
-            print("\n⏳ Waiting before next request...")
-            time.sleep(random.uniform(10, 15))
-    else:
-        regional_df = None
-        print("⏭️  Skipped regional analysis")
-    
-    # Analysis 3: Related queries (OPTIONAL)
-    print("-"*60)
-    
-    choice = input("\nContinue with related queries? (y/n - may trigger rate limit): ").lower()
-    
-    if choice == 'y':
-        related = analyze_related_queries(pytrends, 'Formula 1')
-    else:
-        related = None
-        print("⏭️  Skipped related queries")
-    
-    # Summary
     print("\n" + "="*60)
-    print("📊 ANALYSIS COMPLETE")
+    print("✅ DEMO ANALYSIS COMPLETE")
     print("="*60)
     
-    files_created = []
-    if interest_df is not None:
-        files_created.append("f1_google_trends.png")
-    if regional_df is not None:
-        files_created.append("f1_regional_interest.csv")
-    if related is not None:
-        files_created.extend(["f1_top_queries.csv", "f1_rising_queries.csv"])
+    print("\n📁 Files created:")
+    print("   - f1_google_trends_demo.csv")
+    print("   - f1_google_trends_demo.png")
+    print("   - f1_regional_interest_demo.csv")
+    print("   - f1_regional_interest_demo.png")
+    print("   - f1_top_queries_demo.csv")
+    print("   - f1_rising_queries_demo.csv")
     
-    if files_created:
-        print("\n✅ Files created:")
-        for file in files_created:
-            print(f"   - {file}")
-    
-    print("\n💡 Tips to avoid rate limiting:")
-    print("   1. Wait 10-15 seconds between queries")
-    print("   2. Don't run script multiple times quickly")
-    print("   3. Use VPN if blocked")
-    print("   4. Limit to 1-2 queries per session")
+    print("\n💡 To get REAL data:")
+    print("   1. Wait 1-2 hours")
+    print("   2. Use VPN to change IP")
+    print("   3. Run: python Google_minimal.py")
 
 if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        print("\n\n⏹️  Analysis stopped by user")
-    except Exception as e:
-        print(f"\n❌ Fatal error: {e}")
-        import traceback
-        traceback.print_exc()
+    main()
