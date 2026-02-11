@@ -1,0 +1,61 @@
+
+F1 INTEGRATED ANALYSIS - EXECUTIVE REPORT
+======================================================================
+
+Generated: 2026-02-09 10:18:52
+
+DATA SUMMARY
+======================================================================
+
+Analysis Period: 2025-02-09 to 2026-02-08
+Total Weeks Analyzed: 53
+Race Weekends: 21
+Total Wins: 14
+
+KEY INSIGHTS
+======================================================================
+
+1. Race weekends drive 122.7% increase in Instagram follower growth
+2. Winning boosts fan sentiment by +0.27 points on average
+3. Race excitement strongly correlates with engagement (r=0.919)
+4. Instagram shows 2.3% higher engagement than YouTube on average
+5. Tight championship battles increase search interest by 40.9%
+
+
+CORRELATION HIGHLIGHTS
+======================================================================
+
+Strongest Positive Correlations:
+- Race Excitement ↔ Instagram Engagement: 0.919
+- Wins ↔ Fan Sentiment: 0.845
+- Google Trends ↔ Twitter Mentions: 0.974
+
+ACTIONABLE RECOMMENDATIONS
+======================================================================
+
+1. CONTENT STRATEGY
+   - Post high-quality content during race weekends for maximum reach
+   - Create excitement-driven content (overtakes, battles, drama)
+   - Focus Instagram efforts (highest engagement platform)
+
+2. RACE PROMOTION
+   - Amplify marketing for "exciting" races (close battles, rivalry)
+   - Leverage championship intensity in late-season marketing
+   - Use Google Trends to predict and prepare for engagement spikes
+
+3. FAN ENGAGEMENT
+   - Winning drives positive sentiment - celebrate victories extensively
+   - Maintain engagement during non-race weeks with behind-scenes content
+   - Monitor sentiment during losing streaks and address fan concerns
+
+4. PLATFORM PRIORITIZATION
+   - Instagram: Best for engagement (use for interactive content)
+   - Twitter: Best for reach (use for breaking news)
+   - YouTube: Best for long-form storytelling
+   - Facebook: Good for community building
+
+5. PREDICTIVE INSIGHTS
+   - Use race excitement to forecast engagement levels
+   - Plan content calendar based on championship intensity
+   - Allocate resources strategically for high-impact weekends
+

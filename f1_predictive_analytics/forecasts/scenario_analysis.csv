@@ -1,0 +1,5 @@
+Scenario,Description,Starting_Followers,Ending_Followers,Total_Growth,Growth_Pct
+Baseline,Current trajectory,37924630,38432240,507610,1.3384726495683674
+Optimistic,Improved content strategy + exciting races,37924630,38635285,710655,1.8738617093957144
+Pessimistic,Boring season + reduced engagement,37924630,38313798,389168,1.0261623646690816
+Viral Campaign,Major viral campaign + influencer partnerships,37924630,38855249,930619,2.4538665242086735
